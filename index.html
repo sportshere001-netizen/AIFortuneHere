@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIFortuneHere - Cosmic Chart</title>
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌌</text></svg>">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        function toggleTheme() {
+            const html = document.documentElement;
+            const next = html.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-bs-theme', next); localStorage.setItem('theme', next);
+        }
+        function printReport() { window.print(); }
+    </script>
+
+    <style>
+        :root { --gold: #d4af37; --deep-bg: #0a0514; --card-bg: #150b29; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 80px; transition: 0.3s; }
+        body[data-bs-theme="dark"] { background-color: var(--deep-bg); color: #e0e0e0; }
+
+        .fortune-card { border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        body[data-bs-theme="dark"] .fortune-card { background-color: var(--card-bg); border: 1px solid rgba(212, 175, 55, 0.2); }
+
+        .ai-glow-card { border: 1px solid var(--gold); box-shadow: 0 0 25px rgba(212, 175, 55, 0.25); background: linear-gradient(145deg, rgba(21, 11, 41, 0.95), rgba(45, 20, 80, 0.85)); }
+
+        .text-gold { color: var(--gold) !important; }
+        .btn-gold { background-color: var(--gold); color: #000; font-weight: bold; }
+        .btn-gold:hover { background-color: #b5952f; color: #000; }
+
+        .nav-tabs .nav-link.active { background-color: rgba(212, 175, 55, 0.1); border-color: var(--gold) var(--gold) transparent; color: var(--gold); font-weight: bold;}
+        .nav-tabs .nav-link { color: #888; border-color: rgba(255,255,255,0.1); }
+        .nav-tabs { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; white-space: nowrap; padding-bottom: 5px; }
+
+        @media print {
+            nav, .no-print, .btn, .nav-tabs { display: none !important; }
+            body { background: white !important; color: black !important; padding-top: 0; }
+            .fortune-card { border: none !important; box-shadow: none !important; margin: 0 !important; }
+            .tab-content > .tab-pane { display: block !important; opacity: 1 !important; margin-bottom: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow" style="border-bottom: 2px solid var(--gold);">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold fs-4 text-gold" href="index.html"><i class="fas fa-moon"></i> AIFortuneHere</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto gap-2">
+                    <li class="nav-item"><a class="nav-link active fw-bold text-white" href="index.html"><i class="fas fa-compass text-gold"></i> Chart Calculator</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="about.html"><i class="fas fa-book-open text-info"></i> Research & Methodology</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-outline-light rounded-circle" onclick="toggleTheme()"><i class="fas fa-adjust"></i></button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row justify-content-center g-4">
+
+            <div class="col-lg-10">
+                <div id="inputSection" class="card fortune-card p-4 p-md-5 shadow mb-4 no-print">
+                    <div class="text-center mb-5">
+                        <h2 class="fw-bold display-6 text-gold">Cosmic Chart Calculator</h2>
+                        <p class="text-muted">Enter precise geographic & birth data for an astronomical synthesis.</p>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-bold">Full Name</label>
+                            <input type="text" id="calcName" class="form-control form-control-lg bg-secondary-subtle border-0 rounded-3 shadow-sm" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-bold">Specific Focus Area</label>
+                            <select id="calcFocus" class="form-select form-select-lg bg-secondary-subtle border-0 rounded-3 shadow-sm">
+                                <option value="General Life Path & Destiny">General Life Path & Destiny</option>
+                                <option value="Career, Wealth, & Artha">Career, Wealth, & Artha</option>
+                                <option value="Love, Marriage, & Relationships">Love, Marriage, & Relationships</option>
+                                <option value="Health & Vitality">Health & Vitality</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted fw-bold">Date of Birth</label>
+                            <input type="date" id="calcDOB" class="form-control form-control-lg bg-secondary-subtle border-0 rounded-3 shadow-sm" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted fw-bold">Time of Birth</label>
+                            <div class="d-flex gap-2">
+                                <input type="number" id="calcHour" class="form-control form-control-lg bg-secondary-subtle border-0 rounded-3 shadow-sm text-center" placeholder="HH" min="1" max="12" required>
+                                <input type="number" id="calcMinute" class="form-control form-control-lg bg-secondary-subtle border-0 rounded-3 shadow-sm text-center" placeholder="MM" min="0" max="59" required>
+                                <select id="calcAmPm" class="form-select form-select-lg bg-secondary-subtle border-0 rounded-3 shadow-sm">
+                                    <option value="AM">AM</option>
+                                    <option value="PM">PM</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-muted fw-bold">Exact Birth Location</label>
+                            <input type="text" id="calcLocation" class="form-control form-control-lg bg-secondary-subtle border-0 rounded-3 shadow-sm" placeholder="e.g. PUNE, Maharashtra" required>
+                        </div>
+                    </div>
+
+                    <div id="errorDisplay" class="alert alert-danger d-none mt-4 text-start fw-semibold shadow-sm"></div>
+
+                    <!-- Dual Action Buttons -->
+                    <div class="d-flex flex-wrap justify-content-end gap-3 mt-4">
+                        <button class="btn btn-outline-warning btn-lg rounded-pill px-4 shadow" id="btnInstant">
+                            <i class="fas fa-bolt"></i> Instant Astro Chart
+                        </button>
+                        <button class="btn btn-gold btn-lg rounded-pill px-4 shadow" id="btnDeepAI">
+                            <i class="fas fa-brain"></i> Deep Oracle Prophecy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Structured Results Dashboard -->
+                <div id="outputSection" class="d-none card fortune-card p-4 p-md-5 shadow-lg border border-warning bg-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                        <div>
+                            <h3 class="fw-bold text-gold mb-1"><i class="fas fa-scroll"></i> Diagnostic Cosmic Report</h3>
+                            <small class="text-muted" id="reportHeader"></small>
+                        </div>
+                        <div class="d-flex gap-2 no-print">
+                            <button class="btn btn-outline-warning btn-sm rounded-pill" onclick="printReport()"><i class="fas fa-print"></i> Print PDF</button>
+                            <button class="btn btn-outline-secondary btn-sm rounded-pill" onclick="location.reload()"><i class="fas fa-redo"></i> New</button>
+                        </div>
+                    </div>
+
+                    <p id="outSummary" class="fs-5 lh-lg fst-italic border-start border-4 border-warning ps-3 mb-4"></p>
+
+                    <!-- PROCEDURAL ORACLE HERO CARD -->
+                    <div id="aiOracleContainer" class="d-none mb-4">
+                        <div class="card ai-glow-card p-4 rounded-4 border-warning text-light">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="fw-bold text-gold mb-0"><i class="fas fa-sparkles"></i> Deep Personalized Synthesis</h4>
+                                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill"><i class="fas fa-shield-alt"></i> 100% Offline Privacy Shield</span>
+                            </div>
+
+                            <!-- Loading state -->
+                            <div id="aiLoadingBox" class="text-center py-4">
+                                <i class="fas fa-atom fa-spin fa-2x text-warning mb-3 d-block"></i>
+                                <p id="aiLoadingText" class="text-warning mb-0 fs-5">Synthesizing Local Procedural Matrix...</p>
+                            </div>
+
+                            <!-- Content state -->
+                            <div id="aiContentBox" class="d-none">
+                                <p id="aiExecSummary" class="fs-5 fst-italic text-warning border-bottom border-secondary pb-3"></p>
+                                <h5 class="fw-bold text-gold mt-3">Synthesized Astrological Dynamics</h5>
+                                <p id="aiDeepAnalysis" class="lh-lg"></p>
+
+                                <h5 class="fw-bold text-gold mt-3">Prophetic Timeline Milestones</h5>
+                                <ul id="aiMilestones" class="list-group list-group-flush bg-transparent mb-3"></ul>
+
+                                <h5 class="fw-bold text-gold mt-3">Sacred Remedial Prescriptions</h5>
+                                <ul id="aiRemedies" class="list-group list-group-flush bg-transparent"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ul class="nav nav-tabs no-print mb-4" id="reportTabs" role="tablist">
+                        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-vedic" type="button"><i class="fas fa-om"></i> Vedic Profile</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-karma" type="button"><i class="fas fa-infinity"></i> Karmic Echoes</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-soulmate" type="button"><i class="fas fa-heart"></i> Soulmate</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-lucky" type="button"><i class="fas fa-dice"></i> Lucky Indicators</button></li>
+                    </ul>
+
+                    <div class="tab-content" id="reportTabContent">
+                        <div class="tab-pane fade show active" id="tab-vedic">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-3">
+                                    <div class="p-3 bg-secondary-subtle rounded border-start border-3 border-warning h-100">
+                                        <small class="text-muted d-block fw-bold">Moon Sign (Rashi)</small>
+                                        <span id="outMoonSign" class="fs-5 fw-bold text-gold"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 bg-secondary-subtle rounded border-start border-3 border-primary h-100">
+                                        <small class="text-muted d-block fw-bold">Ascendant (Lagna)</small>
+                                        <span id="outAscendant" class="fs-5 fw-bold"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 bg-secondary-subtle rounded border-start border-3 border-info h-100">
+                                        <small class="text-muted d-block fw-bold">Nakshatra</small>
+                                        <span id="outNakshatra" class="fs-6 fw-bold"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 bg-secondary-subtle rounded border-start border-3 border-success h-100">
+                                        <small class="text-muted d-block fw-bold">Active Dasha</small>
+                                        <span id="outDasha" class="fs-6 fw-bold"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <h5 class="fw-bold text-gold">Foundational Analysis</h5>
+                            <p id="outVedicInsight" class="lh-lg"></p>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-karma">
+                            <h5 class="fw-bold text-gold mb-3"><i class="fas fa-hourglass-half"></i> Past Life Karma & Carryover</h5>
+                            <p id="outKarma" class="lh-lg p-4 bg-secondary-subtle rounded border-start border-4 border-secondary"></p>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-soulmate">
+                            <h5 class="fw-bold text-gold mb-3"><i class="fas fa-star-and-crescent"></i> Partner Energetic Blueprint</h5>
+                            <p id="outSoulmate" class="lh-lg p-4 bg-secondary-subtle rounded border-start border-4 border-danger"></p>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-lucky">
+                            <div class="row g-4">
+                                <div class="col-md-4 text-center">
+                                    <div class="p-4 bg-secondary-subtle rounded h-100 shadow-sm">
+                                        <i class="fas fa-sort-numeric-up fa-2x text-primary mb-2"></i>
+                                        <h6 class="fw-bold text-muted">Life Path Numbers</h6>
+                                        <p id="outLuckyNumbers" class="fs-4 fw-bold text-gold mb-0"></p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="p-4 bg-secondary-subtle rounded h-100 shadow-sm">
+                                        <i class="fas fa-palette fa-2x text-info mb-2"></i>
+                                        <h6 class="fw-bold text-muted">Auspicious Colors</h6>
+                                        <p id="outLuckyColors" class="fs-5 fw-bold text-gold mb-0"></p>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <div class="p-4 bg-secondary-subtle rounded h-100 shadow-sm">
+                                        <i class="fas fa-calendar-day fa-2x text-success mb-2"></i>
+                                        <h6 class="fw-bold text-muted">Chinese Zodiac Element</h6>
+                                        <p id="outBaziElement" class="fs-5 fw-bold text-gold mb-0"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { generateInstantReport, generateLocalOracleProphecy } from "./engine.js";
+
+        function getFormInputs() {
+            const name = document.getElementById('calcName').value.trim();
+            const dob = document.getElementById('calcDOB').value;
+            const location = document.getElementById('calcLocation').value.trim();
+            const focus = document.getElementById('calcFocus').value;
+            const hour = document.getElementById('calcHour').value;
+            const min = document.getElementById('calcMinute').value;
+            const ampm = document.getElementById('calcAmPm').value;
+
+            if (!name || !dob || !hour || !min || !location) {
+                const err = document.getElementById('errorDisplay');
+                err.innerText = "All inputs (Date, Time, Location) are required.";
+                err.classList.remove('d-none');
+                return null;
+            }
+            return { name, dob, hour, minute: min, ampm, location, focus };
+        }
+
+        function populateInstantUI(data, inputs) {
+            document.getElementById('inputSection').classList.add('d-none');
+            document.getElementById('outputSection').classList.remove('d-none');
+
+            document.getElementById('reportHeader').innerText = `Subject: ${inputs.name} | Focus: ${inputs.focus}`;
+            document.getElementById('outSummary').innerText = `Cosmic Blueprint synthesized for ${inputs.name} (${data.coords.cityClean}). Coordinates: ${data.coords.lat.toFixed(2)}°, ${data.coords.lon.toFixed(2)}°.`;
+
+            document.getElementById('outMoonSign').innerText = data.vedic.moonSign;
+            document.getElementById('outAscendant').innerText = data.vedic.ascendant;
+            document.getElementById('outNakshatra').innerText = data.vedic.nakshatra;
+            document.getElementById('outDasha').innerText = data.vedic.dasha;
+            document.getElementById('outVedicInsight').innerText = data.vedic.insight;
+            document.getElementById('outKarma').innerText = data.karmic_echoes;
+            document.getElementById('outSoulmate').innerText = data.soulmate_signature;
+            document.getElementById('outLuckyNumbers').innerText = data.lucky_indicators.numbers;
+            document.getElementById('outLuckyColors').innerText = data.lucky_indicators.colors;
+            document.getElementById('outBaziElement').innerText = data.bazi_element;
+        }
+
+        document.getElementById('btnInstant').addEventListener('click', async () => {
+            const inputs = getFormInputs();
+            if (!inputs) return;
+
+            const btn = document.getElementById('btnInstant');
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Calculating...';
+            btn.disabled = true;
+
+            try {
+                const data = await generateInstantReport(inputs);
+                populateInstantUI(data, inputs);
+                document.getElementById('aiOracleContainer').classList.add('d-none');
+            } catch (err) {
+                alert("Error: " + err.message);
+            } finally {
+                btn.innerHTML = '<i class="fas fa-bolt"></i> Instant Astro Chart';
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('btnDeepAI').addEventListener('click', async () => {
+            const inputs = getFormInputs();
+            if (!inputs) return;
+
+            const btn = document.getElementById('btnDeepAI');
+            btn.innerHTML = '<i class="fas fa-brain fa-spin"></i> Initializing...';
+            btn.disabled = true;
+
+            try {
+                // 1. Render the instant mathematical chart seamlessly
+                const data = await generateInstantReport(inputs);
+                populateInstantUI(data, inputs);
+
+                // 2. Display the Offline Oracle loading box
+                const aiContainer = document.getElementById('aiOracleContainer');
+                const aiLoading = document.getElementById('aiLoadingBox');
+                const aiContent = document.getElementById('aiContentBox');
+
+                aiContainer.classList.remove('d-none');
+                aiLoading.classList.remove('d-none');
+                aiContent.classList.add('d-none');
+
+                // 3. Generate Local Procedural Text (100% Uptime, Zero external AI calls)
+                const aiResult = await generateLocalOracleProphecy(data.rawAstro, inputs.focus, inputs.name);
+
+                // 4. Inject Procedural Data
+                document.getElementById('aiExecSummary').innerText = aiResult.executive_summary;
+                document.getElementById('aiDeepAnalysis').innerText = aiResult.deep_astrological_synthesis;
+
+                const milesList = document.getElementById('aiMilestones');
+                milesList.innerHTML = aiResult.yearly_prophetic_milestones.map(m => `
+                    <li class="list-group-item bg-transparent text-light border-secondary py-2"><i class="fas fa-chevron-right text-warning me-2"></i> ${m}</li>
+                `).join('');
+
+                const remList = document.getElementById('aiRemedies');
+                remList.innerHTML = aiResult.sacred_remedies.map(r => `
+                    <li class="list-group-item bg-transparent text-light border-secondary py-2"><i class="fas fa-star-of-david text-gold me-2"></i> ${r}</li>
+                `).join('');
+
+                aiLoading.classList.add('d-none');
+                aiContent.classList.remove('d-none');
+
+            } catch (err) {
+                console.error(err);
+                alert("Engine error: " + err.message);
+            } finally {
+                btn.innerHTML = '<i class="fas fa-brain"></i> Deep Oracle Prophecy';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
